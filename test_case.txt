@@ -1,5 +1,11 @@
 test case:
 
+說明:
+i: input
+o: output
+
+--------------------
+
 case 1:
 i:
 全部不輸入
