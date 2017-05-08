@@ -30,41 +30,42 @@
         private $dvd_type = array('red', 'green', 'blue');
 
         public function calculate() {
-            if (isset($_POST['red'])) {
+            if (!isset($_POST['red'])) {
+                return;
+            }
 
-                // 全部沒輸入
-                if ($_POST['red'] == '' && $_POST['green'] == '' && $_POST['blue'] == '') {
-                    echo "請輸入 dvd 數量! <br>";
+            // 全部沒輸入
+            if ($_POST['red'] == '' && $_POST['green'] == '' && $_POST['blue'] == '') {
+                echo "請輸入 dvd 數量! <br>";
+            }
+            else {
+                // 有輸入任一值
+                $total_price = 0;
+                $total_point = 0;
+
+                foreach ($this->dvd_type as $type) {
+                    $count_num = $_POST[$type];
+                    if ($count_num === '') {
+                        continue;
+                    }
+
+                    $type_name = $this->get_type_name($type);
+                    if ($this->isNativeNumberString($count_num)) {
+                        echo "{$type_name}數量請輸入非負整數! <br>";
+                        continue;
+                    }
+
+                    $total_price += $this->calculate_price($type, $count_num);
+                    $total_point += $this->calculate_point($type, $count_num);
+
+                    echo $this->output_info($type, $count_num);
                 }
-                else {
-                    // 有輸入任一值
-                    $total_price = 0;
-                    $total_point = 0;
 
-                    foreach ($this->dvd_type as $type) {
-                        $count_num = $_POST[$type];
-                        if ($count_num === '') {
-                            continue;
-                        }
-
-                        $type_name = $this->get_type_name($type);
-                        if ($this->isNativeNumberString($count_num)) {
-                            echo "{$type_name}數量請輸入非負整數! <br>";
-                            continue;
-                        }
-
-                        $total_price += $this->calculate_price($type, $count_num);
-                        $total_point += $this->calculate_point($type, $count_num);
-
-                        echo $this->output_info($type, $count_num);
-                    }
-
-                    echo "總金額 {$total_price} 元 <br>";
-                    echo "<br>";
-                    echo "此次消費積點為 {$total_point} 點";
-                    if ($total_point >= 20) {
-                        echo "，恭喜您獲得神秘小禮物一份! <br>";
-                    }
+                echo "總金額 {$total_price} 元 <br>";
+                echo "<br>";
+                echo "此次消費積點為 {$total_point} 點";
+                if ($total_point >= 20) {
+                    echo "，恭喜您獲得神秘小禮物一份! <br>";
                 }
             }
         }
@@ -72,7 +73,6 @@
         // dvd 標籤名字
         private function get_type_name($type) {
 
-            $name = '';
             switch($type) {
                 case 'red':
                     $name = '紅標';
@@ -84,6 +84,10 @@
 
                 case 'blue':
                     $name = '藍標';
+                break;
+
+                default:
+                    $name = '';
                 break;
             }
 
@@ -115,7 +119,7 @@
         }
 
         // 每一種 dvd 組合價的價格 (元)
-        private function get_free_total_price($type) {
+        private function get_base_price($type) {
 
             switch($type) {
                 case 'red':
@@ -150,8 +154,8 @@
                     $point = 1;
                 break;
 
-                default:
                 case 'blue':
+                default:
                     $point = 0;
                 break;
             }
@@ -171,8 +175,8 @@
                     $point = 8;
                 break;
 
-                default:
                 case 'blue':
+                default:
                     $point = 0;
                 break;
             }
@@ -214,16 +218,20 @@
 
             $count_num = (int)$count_num;
             $each_price = $this->get_each_price($type);
-            $free_total_price = $this->get_free_total_price($type);
+            $base_price = $this->get_base_price($type);
             $max_free_count_num = $this->get_max_free_count_num($type);
 
             $price = ($count_num <= $max_free_count_num) 
-                            ? $free_total_price 
-                            : $free_total_price + ($count_num - $max_free_count_num) * $each_price;
+                            ? $base_price 
+                            : $base_price + ($count_num - $max_free_count_num) * $each_price;
             return $price;
         }
 
         private function calculate_point($type, $count_num) {
+
+            if (!($count_num > 0)) {
+                return 0;
+            }
 
             $max_point = $this->get_max_point($type);
             $each_point = $this->get_each_point($type);
@@ -235,10 +243,9 @@
 
         private function can_buy_more_free($type, $count_num) {
 
-            $min_count_num = 0;
             $max_count_num = $this->get_max_free_count_num($type);
 
-            $result = ($count_num > $min_count_num && $count_num < $max_count_num) ? TRUE : FALSE;
+            $result = (0 < $count_num && $count_num < $max_count_num) ? TRUE : FALSE;
             return $result;
         }
 
@@ -252,7 +259,6 @@
                 $msg .= "，可以再多拿" . strval($max_free_count_num - $count_num)  . "片，價格不變唷!";
             }
             $msg .= "<br>";
-            
             return $msg;
         }
     }
