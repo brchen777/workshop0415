@@ -90,61 +90,72 @@
 
         public function calculate() {
 
-            if (!isset($this->post_value['red'])) {
+            $get_false_number_type = $this->get_false_number_type();
+            if (!empty($get_false_number_type)) {
+                echo $this->output_error_message($get_false_number_type);
                 return;
             }
 
-            // 全部沒輸入
-            if ($this->all_post_value_are_empty()) {
-                echo "請輸入 dvd 數量! <br>";
+            $total_price = 0;
+            $total_point = 0;
+
+            foreach ($this->dvd_type as $type) {
+                $count_num = $this->post_value[$type];
+
+                $total_price += $this->calculate_price($type, $count_num);
+                $total_point += $this->calculate_point($type, $count_num);
+
+                echo $this->output_info($type, $count_num);
             }
-            else {
-                // 有輸入任一值
-                $total_price = 0;
-                $total_point = 0;
 
-                foreach ($this->dvd_type as $type) {
-                    $count_num = $this->get_post_value($type);
-                    if ($count_num === '') {
-                        continue;
-                    }
-
-                    $type_name = $this->get_dvd_setting($type, 'name');
-                    if ($this->is_native_number_string($count_num)) {
-                        echo "{$type_name}數量請輸入非負整數! <br>";
-                        continue;
-                    }
-
-                    $total_price += $this->calculate_price($type, $count_num);
-                    $total_point += $this->calculate_point($type, $count_num);
-
-                    echo $this->output_info($type, $count_num);
-                }
-
-                echo "總金額 {$total_price} 元 <br>";
-                echo "<br>";
-                echo "此次消費積點為 {$total_point} 點";
-                if ($total_point >= 20) {
-                    echo "，恭喜您獲得神秘小禮物一份! <br>";
-                }
+            echo "總金額 {$total_price} 元 <br>";
+            echo "<br>";
+            echo "此次消費積點為 {$total_point} 點";
+            if ($total_point >= 20) {
+                echo "，恭喜您獲得神秘小禮物一份! <br>";
             }
         }
 
-        private function is_native_number_string($num_str) {
+        private function is_native_number($num_str) {
 
-            $result = (preg_match('/^\d+$/', $num_str)) ? FALSE : TRUE;
+            $result = (preg_match('/^\d+$/', $num_str)) ? TRUE : FALSE;
             return $result;
         }
 
-        private function all_post_value_are_empty() {
+        private function is_empty_number($num_str) {
 
+            $result = ($num_str === '') ? TRUE : FALSE;
+            return $result;
+        }
+
+        private function get_false_number_type() {
+
+            $result = array();
             foreach($this->dvd_type as $type) {
-                if($this->post_value[$type] != '') {
-                    return FALSe;
+                $count_num = $this->post_value[$type];
+
+                $is_native_number = $this->is_native_number($count_num);
+                $is_empty_number = $this->is_empty_number($count_num);
+
+                if (!$is_native_number || $is_empty_number) {
+                    $result[] = $type;
                 }
             }
+            return $result;
+        }
 
-            return TRUE;
+        private function output_error_message($types=array()) {
+
+            if (empty($types)) {
+                return '';
+            }
+
+            $msg = array();
+            foreach($types as $type) {
+                $type_name = $this->get_dvd_setting($type, 'name');
+                $msg[] = "{$type_name} 的 dvd 數量請輸入非負整數! <br>";
+            }
+            return join('', $msg);
         }
 
         private function calculate_price($type, $count_num) {
