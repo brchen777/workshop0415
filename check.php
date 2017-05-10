@@ -39,13 +39,13 @@
 
     class dvd {
 
-        private static $all_setting;
+        private static $all_type_setting;
         private $setting;
 
         function __construct($type) {
             
-            $all_setting = _DEFAULT_SETTING::all;
-            $setting_param = $all_setting[$type];
+            $all_type_setting = _DEFAULT_SETTING::all;
+            $setting_param = $all_type_setting[$type];
             $this->set_setting($type, $setting_param);
         }
 
@@ -80,10 +80,18 @@
 
         public function get_dvd_setting($type, $key) {
 
+            if ($type == '' || $key == '') {
+                return null;
+            }
+
             return $this->dvd[$type]->get_setting($key);
         }
 
         public function get_post_value($type) {
+
+            if (!in_array($type, $this->dvd_type)) {
+                return null;
+            }
 
             return $_POST[$type];
         }
@@ -96,9 +104,7 @@
                 return;
             }
 
-            $total_price = 0;
-            $total_point = 0;
-
+            $total_price = $total_point = 0;
             foreach ($this->dvd_type as $type) {
                 $count_num = $this->post_value[$type];
 
