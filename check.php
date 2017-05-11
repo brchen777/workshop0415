@@ -1,6 +1,11 @@
 <?php
     require_once 'index.php';
 
+    class _COMBINATION_SETTING {
+        const type = array('red', 'green');
+        const rate = 0.5;
+    }
+
     // name:       dvd 標籤名字
     // base_price: 每一種 dvd 組合價的價格 (元)
     // each_price: 每一種 dvd 的價格 (元/每片)
@@ -39,13 +44,13 @@
 
     class dvd {
 
-        private static $all_type_setting;
+        private static $all_setting;
         private $setting;
 
         function __construct($type) {
-            
-            $all_type_setting = _DEFAULT_SETTING::all;
-            $setting_param = $all_type_setting[$type];
+
+            $all_setting = _DEFAULT_SETTING::all;
+            $setting_param = $all_setting[$type];
             $this->set_setting($type, $setting_param);
         }
 
@@ -66,51 +71,43 @@
 
     class calculator {
 
-        private $dvd_type = array('red', 'green', 'blue');
-        private $dvd = array();
-        private $post_value = array();
+        private $dvds_type = array('red', 'green', 'blue');
+        private $dvds = array();
+        private $post_values = array();
+        private $combination_count_num = null;
 
         function __construct() {
 
-            foreach($this->dvd_type as $type) {
-                $this->dvd[$type] = new dvd($type);
-                $this->post_value[$type] = $this->get_post_value($type);
+            foreach($this->dvds_type as $type) {
+                $this->dvds[$type] = new dvd($type);
+                $this->post_values[$type] = $this->get_post_value($type);
             }
         }
 
         public function get_dvd_setting($type, $key) {
 
-            if ($type == '' || $key == '') {
-                return null;
-            }
-
-            return $this->dvd[$type]->get_setting($key);
+            return $this->dvds[$type]->get_setting($key);
         }
 
         public function get_post_value($type) {
-
-            if (!in_array($type, $this->dvd_type)) {
-                return null;
-            }
 
             return $_POST[$type];
         }
 
         public function calculate() {
 
-            $get_false_number_type = $this->get_false_number_type();
-            if (!empty($get_false_number_type)) {
-                echo $this->output_error_message($get_false_number_type);
+            $error_message = $this->get_error_message();
+            if (!empty($error_message)) {
+                echo join("<br>", $error_message);
                 return;
             }
 
-            $total_price = $total_point = 0;
-            foreach ($this->dvd_type as $type) {
-                $count_num = $this->post_value[$type];
+            $total_price = $this->calculate_total_price();
 
-                $total_price += $this->calculate_price($type, $count_num);
+            $total_point = 0;
+            foreach ($this->dvds_type as $type) {
+                $count_num = $this->post_values[$type];
                 $total_point += $this->calculate_point($type, $count_num);
-
                 echo $this->output_info($type, $count_num);
             }
 
@@ -134,11 +131,11 @@
             return $result;
         }
 
-        private function get_false_number_type() {
+        public function get_false_number_type() {
 
             $result = array();
-            foreach($this->dvd_type as $type) {
-                $count_num = $this->post_value[$type];
+            foreach($this->dvds_type as $type) {
+                $count_num = $this->post_values[$type];
 
                 $is_native_number = $this->is_native_number($count_num);
                 $is_empty_number = $this->is_empty_number($count_num);
@@ -150,38 +147,107 @@
             return $result;
         }
 
-        private function output_error_message($types=array()) {
-
-            if (empty($types)) {
-                return '';
-            }
+        public function get_error_message() {
 
             $msg = array();
-            foreach($types as $type) {
-                $type_name = $this->get_dvd_setting($type, 'name');
-                $msg[] = "{$type_name} 的 dvd 數量請輸入非負整數! <br>";
+
+            $false_number_types = $this->get_false_number_type();
+            if (empty($false_number_types)) {
+                return $msg;
             }
-            return join('', $msg);
+
+            foreach($false_number_types as $type) {
+                $type_name = $this->get_dvd_setting($type, 'name');
+                $msg[] = "{$type_name}數量請輸入非負整數!";
+            }
+            return $msg;
         }
 
-        private function calculate_price($type, $count_num) {
+        public function get_combination_count_num() {
+
+            if ($this->combination_count_num === null) {
+                $this->set_combination_count_num();
+            }
+
+            return $this->combination_count_num;
+        }
+
+        public function set_combination_count_num() {
+
+            $outer_count_nums = array();
+            foreach($this->dvds_type as $type) {
+                $count_num = $this->post_values[$type];
+                $max_free_count_num = $this->get_dvd_setting($type, 'max_free_count_num');
+                $outer_count_num = $count_num - $max_free_count_num;
+
+                $outer_count_nums[$type] = ($outer_count_num > 0) ? $outer_count_num : 0;
+            }
+
+            $combination_type = _COMBINATION_SETTING::type;
+            $count_nums = array();
+            foreach($outer_count_nums as $type => $count_num) {
+                if (!in_array($type, $combination_type)) {
+                    continue;
+                }
+
+                $count_nums[$type] = $count_num;
+            }
+
+            $combination_count_num = 0;
+            if (!empty($count_nums)) {
+                $combination_count_num = min($count_nums);
+            }
+            $this->combination_count_num = $combination_count_num;
+        }
+
+        public function calculate_price($type, $count_num) {
 
             if (!($count_num > 0)) {
                 return 0;
             }
 
             $count_num = (int)$count_num;
-            $each_price = $this->get_dvd_setting($type, 'each_price');
             $base_price = $this->get_dvd_setting($type, 'base_price');
+            $each_price = $this->get_dvd_setting($type, 'each_price');
             $max_free_count_num = $this->get_dvd_setting($type, 'max_free_count_num');
 
-            $price = ($count_num <= $max_free_count_num) 
-                            ? $base_price 
-                            : $base_price + ($count_num - $max_free_count_num) * $each_price;
+            $price = $base_price;
+            $outer_count_num = ($count_num - $max_free_count_num);
+            if ($outer_count_num <= 0) {
+                return $price;
+            }
+
+            // 沒有組合價的 case:
+            $combination_type = _COMBINATION_SETTING::type;
+            if (!in_array($type, $combination_type)) {
+                $price += ($outer_count_num * $each_price);
+                return $price;
+            }
+
+            // 有組合價的 case:
+            // 組合價
+            $combination_count_num = $this->get_combination_count_num();
+            $combination_price = (int)($each_price * _COMBINATION_SETTING::rate);
+            $price += ($combination_count_num * $combination_price);
+
+            // 超出組合價
+            $original_count_num = ($outer_count_num - $combination_count_num);
+            $price += ($original_count_num * $each_price);
+
             return $price;
         }
 
-        private function calculate_point($type, $count_num) {
+        public function calculate_total_price() {
+
+            $total_price = 0;
+            foreach($this->dvds_type as $type) {
+                $count_num = $this->post_values[$type];
+                $total_price += $this->calculate_price($type, $count_num);
+            }
+            return $total_price;
+        }
+
+        public function calculate_point($type, $count_num) {
 
             if (!($count_num > 0)) {
                 return 0;
@@ -203,7 +269,7 @@
             return $result;
         }
 
-        private function output_info($type, $count_num) {
+        public function output_info($type, $count_num) {
 
             $type_name = $this->get_dvd_setting($type, 'name');
             $max_free_count_num = $this->get_dvd_setting($type, 'max_free_count_num');
