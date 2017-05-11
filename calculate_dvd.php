@@ -110,14 +110,15 @@
                 return;
             }
 
-            $total_point = 0;
+            $total_price = $total_point = 0;
             foreach ($this->dvds_type as $type) {
                 $count_num = $this->post_values[$type];
+                $total_price += $this->calculate_price($type, $count_num);
                 $total_point += $this->calculate_point($type, $count_num);
+
                 echo $this->output_info($type, $count_num);
             }
 
-            $total_price = $this->calculate_total_price();
             echo "總金額 {$total_price} 元 <br>";
             echo "<br>";
             echo "此次消費積點為 {$total_point} 點";
@@ -242,16 +243,6 @@
             $price += ($original_count_num * $each_price);
 
             return $price;
-        }
-
-        public function calculate_total_price() {
-
-            $total_price = 0;
-            foreach($this->dvds_type as $type) {
-                $count_num = $this->post_values[$type];
-                $total_price += $this->calculate_price($type, $count_num);
-            }
-            return $total_price;
         }
 
         public function calculate_point($type, $count_num) {
