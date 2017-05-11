@@ -1,7 +1,10 @@
 <?php
     require_once 'index.php';
 
+    // type: 哪些種類的 dvd 同一組會有額外優惠
+    // rate: 優惠價為幾折
     class _COMBINATION_SETTING {
+
         public static $type = array('red', 'green');
         const rate = 0.5;
     }
@@ -158,7 +161,6 @@
         public function get_error_message() {
 
             $msg = array();
-
             $false_number_types = $this->get_false_number_type();
             if (empty($false_number_types)) {
                 return $msg;
