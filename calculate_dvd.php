@@ -2,7 +2,7 @@
     require_once 'index.php';
 
     class _COMBINATION_SETTING {
-        const type = array('red', 'green');
+        public static $type = array('red', 'green');
         const rate = 0.5;
     }
 
@@ -14,7 +14,7 @@
     // max_free_count_num: 每一種 dvd 可購買組合價的上限 (片)
     class _DEFAULT_SETTING {
 
-        const all = array(
+        public static $all = array(
             'red' => array(
                 'name'       => '紅標',
                 'base_price' => 60,
@@ -44,13 +44,13 @@
 
     class dvd {
 
-        private static $all_setting;
+        private static $all_type_setting;
         private $setting;
 
         function __construct($type) {
 
-            $all_setting = _DEFAULT_SETTING::all;
-            $setting_param = $all_setting[$type];
+            $all_type_setting = _DEFAULT_SETTING::$all;
+            $setting_param = $all_type_setting[$type];
             $this->set_setting($type, $setting_param);
         }
 
@@ -86,10 +86,18 @@
 
         public function get_dvd_setting($type, $key) {
 
+            if ($type == '' || $key == '') {
+                return null;
+            }
+
             return $this->dvds[$type]->get_setting($key);
         }
 
         public function get_post_value($type) {
+
+            if (!in_array($type, $this->dvds_type)) {
+                return null;
+            }
 
             return $_POST[$type];
         }
@@ -102,8 +110,6 @@
                 return;
             }
 
-            $total_price = $this->calculate_total_price();
-
             $total_point = 0;
             foreach ($this->dvds_type as $type) {
                 $count_num = $this->post_values[$type];
@@ -111,6 +117,7 @@
                 echo $this->output_info($type, $count_num);
             }
 
+            $total_price = $this->calculate_total_price();
             echo "總金額 {$total_price} 元 <br>";
             echo "<br>";
             echo "此次消費積點為 {$total_point} 點";
@@ -183,7 +190,7 @@
                 $outer_count_nums[$type] = ($outer_count_num > 0) ? $outer_count_num : 0;
             }
 
-            $combination_type = _COMBINATION_SETTING::type;
+            $combination_type = _COMBINATION_SETTING::$type;
             $count_nums = array();
             foreach($outer_count_nums as $type => $count_num) {
                 if (!in_array($type, $combination_type)) {
@@ -218,7 +225,7 @@
             }
 
             // 沒有組合價的 case:
-            $combination_type = _COMBINATION_SETTING::type;
+            $combination_type = _COMBINATION_SETTING::$type;
             if (!in_array($type, $combination_type)) {
                 $price += ($outer_count_num * $each_price);
                 return $price;
