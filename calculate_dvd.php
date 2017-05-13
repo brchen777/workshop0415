@@ -9,12 +9,12 @@
         const rate = 0.5;
     }
 
-    // name:              dvd 標籤名字
-    // base_price:        每一種 dvd 的基礎價格 (元)     --> 買 N 片內都是 M 元
-    // original_price:    每一種 dvd 的原始價格 (元/每片)
-    // combination_price: 每一種 dvd 的組合價格 (元/每片) --> 某些種類的 dvd 同一組後會有額外優惠
-    // each_point:        每一種 dvd 的集點 (點/每片)
-    // max_point:         每一種 dvd 的集點上限 (點)
+    // name:               dvd 標籤名字
+    // base_price:         每一種 dvd 的基礎價格 (元)       買 N 片內都是 M 元
+    // each_price:         每一種 dvd 的原始價格 (元/每片)
+    // combination_price:  每一種 dvd 的組合價格 (元/每片)  某些種類的 dvd 同一組後會有額外優惠
+    // each_point:         每一種 dvd 的集點 (點/每片)
+    // max_point:          每一種 dvd 的集點上限 (點)
     // max_free_count_num: 每一種 dvd 可購買基礎價的上限 (片)
     class _DEFAULT_SETTING {
 
@@ -22,7 +22,7 @@
             'red' => array(
                 'name'               => '紅標',
                 'base_price'         => 60,
-                'original_price'     => 40,
+                'each_price'         => 40,
                 'combination_price'  => 0,
                 'each_point'         => 3,
                 'max_point'          => 15,
@@ -31,7 +31,7 @@
             'green' => array(
                 'name'               => '綠標',
                 'base_price'         => 30,
-                'original_price'     => 12,
+                'each_price'         => 12,
                 'combination_price'  => 0,
                 'each_point'         => 1,
                 'max_point'          => 8,
@@ -40,7 +40,7 @@
             'blue' => array(
                 'name'               => '藍標',
                 'base_price'         => 25,
-                'original_price'     => 10,
+                'each_price'         => 10,
                 'combination_price'  => 0,
                 'each_point'         => 0,
                 'max_point'          => 0,
@@ -61,7 +61,7 @@
             $this->set_setting($type, $setting_param);
 
             // update other setting
-            $this->update_combination_original_price($type);
+            $this->update_combination_price($type);
         }
 
         public function get_setting($key) {
@@ -78,7 +78,7 @@
             $this->setting = array_merge($this->setting, $setting);
         }
 
-        public function update_combination_original_price($type) {
+        public function update_combination_price($type) {
 
             $combination_type = _COMBINATION_SETTING::$type;
             if (!in_array($type, $combination_type)) {
@@ -86,7 +86,7 @@
                 return;
             }
 
-            $original_price = $this->get_setting('original_price');
+            $original_price = $this->get_setting('each_price');
             $combination_price = (int)($original_price * _COMBINATION_SETTING::rate);
             $this->set_setting($type, array('combination_price' => $combination_price));
         }
@@ -263,7 +263,7 @@
             $this->combination_count_num = $combination_count_num;
         }
 
-        // 基礎價 (數量少於 N 個時共 M 元)
+        // 計算基礎價 (數量少於 N 個時共 M 元)
         public function calculate_base_price($type, $count_num) {
 
             if (!($count_num > 0)) {
@@ -274,7 +274,7 @@
             return $result;
         }
 
-        // 組合價 (多顏色一組)
+        // 計算組合價 (多顏色一組)
         public function calculate_combination_price($type, $count_num) {
 
             if (!($count_num > 0)) {
@@ -288,14 +288,14 @@
             return $result;
         }
 
-        // 超出組合價 (原價)
+        // 計算原價
         public function calculate_original_price($type, $count_num) {
 
             if (!($count_num > 0)) {
                 return 0;
             }
 
-            $original_price = $this->get_dvd_setting($type, 'original_price');
+            $original_price = $this->get_dvd_setting($type, 'each_price');
             $original_count_num = $this->get_original_count_num($type);
 
             $result = $original_price * $original_count_num;
