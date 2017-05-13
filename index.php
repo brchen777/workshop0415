@@ -9,7 +9,7 @@
 </head>
 <body>
 <div class="title">DVD 結帳系統</div>
-<form action="calculate_dvd.php" method="post">
+<form action="main.php" method="post">
     <div class="movie_num">紅標 <input type="text" name="red"> 片</div>
     <div class="movie_num">綠標 <input type="text" name="green"> 片</div>
     <div class="movie_num">藍標 <input type="text" name="blue"> 片</div>
