@@ -45,7 +45,7 @@
         public function get_post_value($type) {
 
             $dvds_type = $this->get_dvds_tpye();
-            if (!in_array($type, $dvds_type)) {
+            if (!in_array($type, $dvds_type) || !array_key_exists($type, $_POST)) {
                 return null;
             }
 
