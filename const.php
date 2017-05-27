@@ -7,6 +7,11 @@
         const rate = 0.5;
     }
 
+    // point: 獲得禮物最少需要的點數
+    class _GIFT_NEEDED {
+        public static $point = 20;
+    }
+
     // name:               dvd 標籤名字
     // base_price:         每一種 dvd 的基礎價格 (元)       買 N 片內都是 M 元
     // each_price:         每一種 dvd 的原始價格 (元/每片)

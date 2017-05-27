@@ -5,6 +5,6 @@
     function main() {
         echo "<br>";
         $calculator = new calculator();
-        $calculator->calculate();
+        $calculator->exec();
     }
     main();
