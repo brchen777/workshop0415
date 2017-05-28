@@ -236,6 +236,10 @@
             $final_info = self::$lib->get_final_info();
             $dvds_info = $final_info['dvds_info'];
             
+            // 32-bit int 的最大值
+            $this->assertEquals($dvds_info['red']['count_num'],     2147483647);
+            $this->assertEquals($dvds_info['green']['count_num'],   2147483647);
+            $this->assertEquals($dvds_info['blue']['count_num'],    2147483647);
             $this->assertEquals($dvds_info['red']['more_free_count_num'],   0);
             $this->assertEquals($dvds_info['green']['more_free_count_num'], 0);
             $this->assertEquals($dvds_info['blue']['more_free_count_num'],  0);
