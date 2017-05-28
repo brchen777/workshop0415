@@ -51,8 +51,8 @@
                 }
             }
 
-            $total_price = $info['total_price'];
-            $total_point = $info['total_point'];
+            $total_price = (string)$info['total_price'];
+            $total_point = (string)$info['total_point'];
 
             $msg['total_price'] = "總金額 {$total_price} 元";
             $msg['total_point'] = "此次消費積點為 {$total_point} 點";
