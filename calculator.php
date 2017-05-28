@@ -6,11 +6,16 @@
     class calculator {
 
         private $lib_calculate;
+
         private $info = array();
 
-        function __construct() {
+        function __construct($param = array()) {
 
             $this->lib_calculate = new lib_calculate();
+
+            if (!empty($param)) {
+                $this->lib_calculate->set_post_values_by_param($param);
+            }
         }
 
         public function exec() {
@@ -20,7 +25,7 @@
                 return;
             }
 
-            $this->calculate();
+            $this->info = $this->lib_calculate->get_final_info();
             $this->show();
         }
 
@@ -42,40 +47,16 @@
             echo join('<br>', $msg);
         }
 
-        public function calculate() {
-
-            // init
-            $info = array(
-                'types_info' => array(),
-                'total_price' => 0,
-                'total_point' => 0
-            );
-
-            $dvds_type = $this->lib_calculate->get_dvds_tpye();
-            $total_price = $total_point = 0;
-            foreach ($dvds_type as $type) {
-                $count_num = $this->lib_calculate->get_post_value($type);
-                $total_price += $this->lib_calculate->calculate_price($type, $count_num);
-                $total_point += $this->lib_calculate->calculate_point($type, $count_num);
-
-                $info['types_info'][$type] = $this->lib_calculate->get_dvd_info($type);
-            }
-
-            $info['total_price'] = $total_price;
-            $info['total_point'] = $total_point;
-            $this->info = $info;
-        }
-
         public function show() {
 
             $msg = array();
             
             $info = $this->info;
-            $types_info = $info['types_info'];
-            foreach ($types_info as $type => $type_info) {
-                $type_name = $type_info['name'];
-                $count_num = $type_info['count_num'];
-                $more_free_count_num = $type_info['more_free_count_num'];
+            $dvds_info = $info['dvds_info'];
+            foreach ($dvds_info as $type => $dvd_info) {
+                $type_name = $dvd_info['name'];
+                $count_num = $dvd_info['count_num'];
+                $more_free_count_num = $dvd_info['more_free_count_num'];
 
                 $msg["{$type}_info"] = "您購買{$type_name} {$count_num} 片";
                 if ($more_free_count_num > 0) {
