@@ -1,21 +1,20 @@
 <?php
     require_once 'const.php';
-    require_once 'dvd.php';
-    require_once './lib/lib_calculate.php';
+    require_once 'lib/lib_calculator.php';
 
     class calculator {
 
-        private $lib_calculate;
+        private $lib_calculator;
         private $info = array();
 
         function __construct() {
 
-            $this->lib_calculate = new lib_calculate();
+            $this->lib_calculator = new lib_calculator();
         }
 
         public function exec() {
 
-            $this->info = $this->lib_calculate->get_final_info();
+            $this->info = $this->lib_calculator->get_final_info();
             $this->show();
         }
 
@@ -25,7 +24,7 @@
 
             $msg = array();
             foreach($info['error_num_types'] as $type) {
-                $type_name = $this->lib_calculate->get_dvd_setting($type, 'name');
+                $type_name = $this->lib_calculator->get_dvd_setting($type, 'name');
                 $msg[] = "{$type_name}數量請輸入非負整數!";
             }
             echo join('<br>', $msg);

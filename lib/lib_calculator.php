@@ -1,7 +1,9 @@
 <?php
+    require_once __DIR__ . '/../const.php';
+    require_once __DIR__ . '/../dvd.php';
     require_once 'lib_math.php';
 
-    class lib_calculate {
+    class lib_calculator {
         private $dvds = array();
         private $dvds_type = null;
         private $error_num_types = null;
@@ -49,12 +51,15 @@
             return $this->dvds[$type]->get_setting($key);
         }
 
-        public function get_post_value($type) {
+        public function get_post_value($type, $convertToInt=TRUE) {
 
             if (empty($this->post_values)) {
                 $this->set_post_values();
             }
-            return $this->post_values[$type];
+
+            $result = $this->post_values[$type];
+            $result = ($convertToInt) ? (int)$result : $result;
+            return $result;
         }
 
         public function set_post_values() {
@@ -79,7 +84,7 @@
 
         public function get_original_count_num($type) {
 
-            $count_num = $this->post_values[$type];
+            $count_num = $this->get_post_value($type);
             $max_free_count_num = $this->get_dvd_setting($type, 'max_free_count_num');
             $combination_count_num = $this->get_combination_count_num();
 
@@ -87,6 +92,7 @@
             $result = (!in_array($type, $combination_type))
                             ? $count_num - $max_free_count_num
                             : ($count_num - $max_free_count_num - $combination_count_num);
+            $result = ($result > 0) ? $result : 0;
             return $result;
         }
 
@@ -103,7 +109,7 @@
             $dvds_type = $this->get_dvds_tpye();
             $outer_count_nums = array();
             foreach($dvds_type as $type) {
-                $count_num = $this->post_values[$type];
+                $count_num = $this->get_post_value($type);
                 $max_free_count_num = $this->get_dvd_setting($type, 'max_free_count_num');
                 $outer_count_num = ($count_num - $max_free_count_num);
 
@@ -140,8 +146,7 @@
             $error_num_types = array();
             $dvds_type = $this->get_dvds_tpye();
             foreach($dvds_type as $type) {
-                $count_num = $this->get_post_value($type);
-
+                $count_num = $this->get_post_value($type, FALSE);
                 $is_native_number = $this->lib_math->is_native_number($count_num);
                 $is_empty_number = $this->lib_math->is_empty_number($count_num);
 
