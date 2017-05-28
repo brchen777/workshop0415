@@ -253,23 +253,26 @@
         public function get_final_info() {
 
             // init
-            $total_price = $total_point = 0;
             $info = array(
+                'error_num_types' => null,
                 'dvds_info' => array(),
                 'total_price' => 0,
                 'total_point' => 0
             );
 
+            $error_num_types = $this->get_error_num_types();
+            if (!empty($error_num_types)) {
+                $info['error_num_types'] = $error_num_types;
+                return $info;
+            }
+
             $dvds_type = $this->get_dvds_tpye();
             foreach ($dvds_type as $type) {
-                $total_price += $this->get_total_price($type);
-                $total_point += $this->get_total_point($type);
-
+                $info['total_price'] += $this->get_total_price($type);
+                $info['total_point'] += $this->get_total_point($type);
                 $info['dvds_info'][$type] = $this->get_dvd_info($type);
             }
 
-            $info['total_price'] = $total_price;
-            $info['total_point'] = $total_point;
             return $info;
         }
     }

@@ -6,41 +6,25 @@
     class calculator {
 
         private $lib_calculate;
-
         private $info = array();
 
-        function __construct($param = array()) {
+        function __construct() {
 
             $this->lib_calculate = new lib_calculate();
-
-            if (!empty($param)) {
-                $this->lib_calculate->set_post_values_by_param($param);
-            }
         }
 
         public function exec() {
-
-            if (!$this->valid()) {
-                $this->show_error_message();
-                return;
-            }
 
             $this->info = $this->lib_calculate->get_final_info();
             $this->show();
         }
 
-        public function valid() {
-
-            $error_num_types = $this->lib_calculate->get_error_num_types();
-            $result = empty($error_num_types);
-            return $result;
-        }
-
         public function show_error_message() {
 
+            $info = $this->info;
+
             $msg = array();
-            $error_num_types = $this->lib_calculate->get_error_num_types();
-            foreach($error_num_types as $type) {
+            foreach($info['error_num_types'] as $type) {
                 $type_name = $this->lib_calculate->get_dvd_setting($type, 'name');
                 $msg[] = "{$type_name}數量請輸入非負整數!";
             }
@@ -49,9 +33,14 @@
 
         public function show() {
 
+            $info = $this->info;
+            if (!empty($info['error_num_types'])) {
+                $this->show_error_message();
+                return;
+            }
+
             $msg = array();
             
-            $info = $this->info;
             $dvds_info = $info['dvds_info'];
             foreach ($dvds_info as $type => $dvd_info) {
                 $type_name = $dvd_info['name'];
