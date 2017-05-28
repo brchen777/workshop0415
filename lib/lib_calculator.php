@@ -15,6 +15,15 @@
             $this->lib_math = new lib_math();
         }
 
+        public function purge() {
+
+            $this->dvds = array();
+            $this->dvds_type = null;
+            $this->error_num_types = null;
+            $this->post_values = array();
+            $this->combination_count_num = null;
+        }
+
         public function get_dvds_tpye() {
 
             if ($this->dvds_type === null) {
@@ -73,6 +82,8 @@
         }
 
         public function set_post_values_by_param($param) {
+
+            $this->purge();
 
             $post_values = array();
             $dvds_type = $this->get_dvds_tpye();
@@ -192,7 +203,7 @@
 
             $combination_price = $this->get_dvd_setting($type, 'combination_price');
             $combination_count_num = $this->get_combination_count_num();
-            
+
             $result = $combination_price * $combination_count_num;
             return $result;
         }
@@ -262,7 +273,8 @@
                 'error_num_types' => null,
                 'dvds_info' => array(),
                 'total_price' => 0,
-                'total_point' => 0
+                'total_point' => 0,
+                'get_gift' => FALSE
             );
 
             $error_num_types = $this->get_error_num_types();
@@ -276,6 +288,10 @@
                 $info['total_price'] += $this->get_total_price($type);
                 $info['total_point'] += $this->get_total_point($type);
                 $info['dvds_info'][$type] = $this->get_dvd_info($type);
+            }
+
+            if ($info['total_point'] >= _GIFT_NEEDED::$point) {
+                $info['get_gift'] = TRUE;
             }
 
             return $info;

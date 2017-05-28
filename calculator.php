@@ -1,5 +1,4 @@
 <?php
-    require_once 'const.php';
     require_once 'lib/lib_calculator.php';
 
     class calculator {
@@ -57,7 +56,7 @@
 
             $msg['total_price'] = "總金額 {$total_price} 元";
             $msg['total_point'] = "此次消費積點為 {$total_point} 點";
-            if ($total_point >= _GIFT_NEEDED::$point) {
+            if ($info['get_gift']) {
                 $msg['total_point'] .= "，恭喜您獲得神秘小禮物一份!";
             }
             echo join('<br>', $msg);
